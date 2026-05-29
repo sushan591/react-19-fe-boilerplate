@@ -11,12 +11,20 @@ import GlobalErrorBoundary from "./components/error/GlobalErrorBoundary";
 import QueryErrorBoundary from "./components/error/QueryErrorBoundary";
 import "./components/error/error-styles.css";
 import { initSentry } from "@/core/sentry/sentry";
+import { reportWebVitals } from "@/core/perf/reportWebVitals";
 
-// Initialize Sentry for error tracking (async)
-initSentry().catch((error) => {
-  // eslint-disable-next-line no-console
-  console.error("Failed to initialize Sentry:", error);
-});
+// Initialize Sentry for error tracking (async), then start Web Vitals reporting
+initSentry()
+  .catch((error) => {
+    // eslint-disable-next-line no-console
+    console.error("Failed to initialize Sentry:", error);
+  })
+  .finally(() => {
+    reportWebVitals().catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error("Failed to start web-vitals reporting:", error);
+    });
+  });
 
 // Set document title from environment variable
 document.title = import.meta.env.VITE_APP_NAME || "React App";

@@ -13,6 +13,7 @@ interface ImportMetaEnv {
   readonly VITE_GITHUB_CLIENT_ID?: string;
   readonly VITE_JWT_SECRET?: string;
   readonly VITE_JWT_EXPIRES_IN?: string;
+  readonly VITE_PERSIST_ENCRYPT_KEY?: string;
 }
 
 interface ImportMeta {

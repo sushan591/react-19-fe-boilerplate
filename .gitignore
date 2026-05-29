@@ -38,3 +38,7 @@ coverage
 .env
 .env.*
 !.env.example
+
+# Internal tracking / narrative docs (kept local, not committed)
+audit.md
+explanation.md

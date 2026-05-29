@@ -1,12 +1,24 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const isDev = mode === 'development';
-  
+  const isAnalyze = mode === 'analyze';
+
   return {
-    plugins: [react()],
+    plugins: [
+      react(),
+      isAnalyze &&
+        visualizer({
+          filename: 'dist/stats.html',
+          template: 'treemap',
+          gzipSize: true,
+          brotliSize: true,
+          open: true,
+        }),
+    ],
     resolve: {
       alias: {
         "@": "/src",
@@ -50,8 +62,8 @@ export default defineConfig(({ mode }) => {
               if (id.includes('@sentry/core') || id.includes('@sentry/browser')) {
                 return 'sentry-core';
               }
-              // Sentry tracing (separate from core)
-              if (id.includes('@sentry/tracing') || id.includes('@sentry-internal')) {
+              // Sentry internal (tracing, replay, etc. are bundled here in v8+)
+              if (id.includes('@sentry-internal')) {
                 return 'sentry-tracing';
               }
               // Sentry React integration

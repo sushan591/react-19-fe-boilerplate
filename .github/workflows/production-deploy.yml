@@ -1,0 +1,122 @@
+name: production-deploy
+
+on:
+  push:
+    branches:
+      - production #TODO: change this to prod branch in future
+
+permissions:
+  contents: read
+
+# Cancel an in-flight deploy if a newer commit lands on production.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test -- --run
+
+      - name: Create .env
+        run: |
+          touch .env
+          echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL_PRODUCTION }}" >> .env
+          echo "VITE_APP_NAME=${{ vars.VITE_APP_NAME }}" >> .env
+          echo "VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}" >> .env
+          echo "VITE_PERSIST_ENCRYPT_KEY=${{ secrets.VITE_PERSIST_ENCRYPT_KEY_PRODUCTION }}" >> .env
+          echo "VITE_ENABLE_ERROR_LOGGING=true" >> .env
+          echo "VITE_ENABLE_QUERY_DEVTOOLS=false" >> .env
+          echo "VITE_ENABLE_OPTIMISTIC_UPDATES=true" >> .env
+          echo "VITE_ENABLE_PREFETCHING=true" >> .env
+
+      - name: Build
+        run: npm run build
+
+      - name: Enforce bundle-size budgets
+        run: npm run size:check
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      # url: https://app.example.com   # uncomment once the URL is known
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      # ----------------------------------------------------------------------
+      # DEPLOY STEP — uncomment ONE of the blocks below and fill in the
+      # required secrets in repo Settings → Secrets and variables → Actions.
+      # See DEPLOYMENT.md for the full guide.
+      # ----------------------------------------------------------------------
+
+      # ── S3 + CloudFront ────────────────────────────────────────────────
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-region: ${{ vars.AWS_REGION }}
+      #     role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+      # - name: Sync to S3
+      #   run: aws s3 sync dist s3://${{ vars.AWS_S3_BUCKET }} --delete
+      # - name: Invalidate CloudFront
+      #   run: |
+      #     aws cloudfront create-invalidation \
+      #       --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} \
+      #       --paths "/*"
+
+      # ── Netlify ────────────────────────────────────────────────────────
+      # - uses: nwtgck/actions-netlify@v3
+      #   with:
+      #     publish-dir: dist
+      #     production-deploy: true
+      #     deploy-message: ${{ github.event.head_commit.message }}
+      #   env:
+      #     NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      #     NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      # ── Vercel ─────────────────────────────────────────────────────────
+      # - uses: amondnet/vercel-action@v25
+      #   with:
+      #     vercel-token: ${{ secrets.VERCEL_TOKEN }}
+      #     vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+      #     vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+      #     vercel-args: "--prod"
+
+      # ── GitHub Pages ───────────────────────────────────────────────────
+      # - uses: actions/upload-pages-artifact@v3
+      #   with: { path: dist }
+      # - uses: actions/deploy-pages@v4
+      #   id: deployment
+
+      - name: TODO marker
+        run: |
+          echo "::warning::No deploy target wired yet — see DEPLOYMENT.md and uncomment the block matching your host."
+          ls -la dist

@@ -28,6 +28,7 @@ const PerformanceDemo: React.FC = () => {
 
   useEffect(() => {
     if (basicQuery.isLoading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       addLog("🔄 Basic query: Loading users...");
     } else if (basicQuery.data) {
       addLog(`✅ Basic query: Loaded ${basicQuery.data.length} users`);

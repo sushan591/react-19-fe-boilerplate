@@ -1,0 +1,37 @@
+# CODEOWNERS — required reviewers per path.
+#
+# Syntax: <pattern> <owner> [more owners...]
+# Owners can be GitHub usernames (@user) or team slugs (@org/team).
+# Last matching pattern wins, so put the catch-all first and refine below.
+#
+# !! Replace the @placeholder owners below with real GitHub handles before
+# !! turning on branch protection that requires CODEOWNERS review. Until then,
+# !! these rules are advisory — PRs won't be blocked on missing reviewers.
+
+# Catch-all — every file needs at least this team's approval.
+*                              @your-org/frontend-team
+
+# Build, CI, and security-critical paths — extra eyes from platform/security.
+/.github/                      @your-org/frontend-team @your-org/devops
+/.github/workflows/            @your-org/frontend-team @your-org/devops
+/.github/dependabot.yml        @your-org/frontend-team @your-org/devops
+/.husky/                       @your-org/frontend-team @your-org/devops
+
+# Build tooling and dependency surface.
+/package.json                  @your-org/frontend-team @your-org/devops
+/package-lock.json             @your-org/frontend-team @your-org/devops
+/vite.config.ts                @your-org/frontend-team
+/vitest.config.ts              @your-org/frontend-team
+/tsconfig*.json                @your-org/frontend-team
+/eslint.config.js              @your-org/frontend-team
+/scripts/                      @your-org/frontend-team @your-org/devops
+
+# Security-sensitive runtime surface — auth/session, persisted state, Sentry, HTTP.
+/src/store/                    @your-org/frontend-team @your-org/security
+/src/core/sentry/              @your-org/frontend-team @your-org/security
+/src/core/http/                @your-org/frontend-team @your-org/security
+
+# Process docs — keep aligned with how the team actually works.
+/CONTRIBUTING.md               @your-org/frontend-team
+/README.md                     @your-org/frontend-team
+/audit.md                      @your-org/frontend-team
