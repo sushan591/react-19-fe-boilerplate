@@ -41,7 +41,7 @@ Keep the description under ~50 characters. No spaces, no uppercase — kebab-cas
 
 ## Commit messages
 
-Conventional Commits (not yet enforced by a hook, but required in PRs):
+Conventional Commits, enforced at commit time by `commitlint` via `.husky/commit-msg` (see `commitlint.config.js` for the exact `type-enum` we allow):
 
 ```
 <type>(<optional scope>): <imperative summary>
